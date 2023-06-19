@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .all-todos {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .todo {
+            margin-left: 50px;
+            margin-top: 50px;
+
+            width: 200px;
+
+            border: 3px solid black;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: #ff0000;
+        }
+    </style>
+    <title>Todo</title>
+</head>
+<body>
+    <h2>Список todo</h2>
+    
+    <p><a href="/create">Добавить todo</a></p>
+    <div class="all-todos">
+        {{range .}}
+
+        <div class="todo">
+            <p>{{.Id}}</p>
+            <p>{{.Name}}</p>
+            <p>{{.Text}}</p> 
+            <p>{{.Start}}</p>
+            <p>{{.End}}</p>
+            <p><a href="/edit/{{.Id}}">Редактировать</a> | <a href="/delete/{{.Id}}">Удалить</a></p>
+        </div>
+        
+        {{end}}
+    </div>
+
+</body>
+</html>
