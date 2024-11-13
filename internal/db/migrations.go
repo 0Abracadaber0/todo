@@ -2,37 +2,28 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/golang-migrate/migrate/v4"
+
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func RunMigrations(db *sql.DB, migrationsPath string) error {
-	if err := mkDir(migrationsPath); err != nil {
-		return err
-	}
-
-	files, err := os.ReadDir(migrationsPath)
+	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
 	if err != nil {
-		return fmt.Errorf("reading migrations directory: %w", err)
+		return fmt.Errorf("could not create migrate instance: %v", err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", migrationsPath),
+		"sqlite3", driver)
+	if err != nil {
+		return fmt.Errorf("could not create migrate instance: %v", err)
 	}
 
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		if !strings.HasSuffix(file.Name(), ".up.sql") {
-			continue
-		}
-
-		migrationPath := filepath.Join(migrationsPath, file.Name())
-		sqlContent, _ := os.ReadFile(migrationPath)
-		_, err = db.Exec(string(sqlContent))
-		if err != nil {
-			return fmt.Errorf("failed to run migration %s: %s", file.Name(), err)
-		}
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("failed to run migrations: %v", err)
 	}
 
 	return nil

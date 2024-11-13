@@ -10,7 +10,7 @@ type Config struct {
 func Load() *Config {
 	dbPath := os.Getenv("DATABASE_PATH")
 	if dbPath == "" {
-		dbPath = "data/tasks.db"
+		dbPath = "sql/tasks.db"
 	}
 
 	migrationsPath := os.Getenv("MIGRATIONS_PATH")

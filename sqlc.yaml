@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    schema: "migrations/1_create_tasks_table.up.sql"
+    queries: "sql/queries.sql"
+    gen:
+      go:
+        package: "db"
+        out: "internal/db/gen"
