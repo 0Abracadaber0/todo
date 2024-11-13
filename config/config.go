@@ -3,7 +3,8 @@ package config
 import "os"
 
 type Config struct {
-	DatabasePath string
+	DatabasePath   string
+	MigrationsPath string
 }
 
 func Load() *Config {
@@ -11,7 +12,14 @@ func Load() *Config {
 	if dbPath == "" {
 		dbPath = "data/tasks.db"
 	}
+
+	migrationsPath := os.Getenv("MIGRATIONS_PATH")
+	if migrationsPath == "" {
+		migrationsPath = "migrations/"
+	}
+
 	return &Config{
-		DatabasePath: dbPath,
+		DatabasePath:   dbPath,
+		MigrationsPath: migrationsPath,
 	}
 }

@@ -20,7 +20,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Info("successfully connected to database")
 	defer dbConn.Close()
+
+	err = db.RunMigrations(dbConn, cfg.MigrationsPath)
+	if err != nil {
+		panic(err)
+	}
 
 	app := fiber.New()
 
@@ -33,6 +39,9 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Info("Shutting down server...")
-	app.Shutdown()
+	log.Info("shutting down server...")
+	err = app.Shutdown()
+	if err != nil {
+		panic(err)
+	}
 }
