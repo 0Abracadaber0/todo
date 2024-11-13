@@ -2,7 +2,9 @@ package services
 
 import (
 	"database/sql"
+	"log/slog"
 	"time"
+	"todo/internal/models"
 )
 
 type TaskService struct {
@@ -19,4 +21,9 @@ func (s *TaskService) OverdueChecker(interval time.Duration) {
 	for range ticker.C {
 		// TODO: проверка задач на просрочку
 	}
+}
+
+func (s *TaskService) CreateTask(log *slog.Logger, task models.Task) (models.Task, error) {
+	log.Debug("CreateTask")
+	return models.Task{}, nil
 }

@@ -6,8 +6,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 	"todo/config"
 	"todo/internal/db"
+	"todo/internal/middleware"
+	"todo/internal/router"
+	"todo/internal/services"
 )
 
 func main() {
@@ -29,6 +33,13 @@ func main() {
 	}
 
 	app := fiber.New()
+	taskService := services.NewTaskService(dbConn)
+	go taskService.OverdueChecker(time.Minute)
+
+	app.Use(middleware.LoggerMiddleware(log))
+	app.Use(middleware.TaskServiceMiddleware(taskService))
+
+	router.SetupRoutes(app)
 
 	go func() {
 		if err := app.Listen(":8080"); err != nil {
