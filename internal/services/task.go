@@ -188,7 +188,7 @@ func OverdueChecker(wg *sync.WaitGroup, log *slog.Logger, interval time.Duration
 			query := database.New(db.DB)
 			err := query.MarkOverdueTasks(context.Background())
 			if err != nil {
-				log.Error("failed to mark overdue tasks: %w", err)
+				log.Error("failed to mark overdue tasks: %w", "err", err)
 			}
 		case <-stopChan:
 			log.Info("stopping overdue checker")
