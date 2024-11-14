@@ -10,9 +10,10 @@ import (
 	"database/sql"
 )
 
-const createTask = `-- name: CreateTask :exec
+const createTask = `-- name: CreateTask :one
 INSERT INTO tasks (title, description, due_date, overdue, completed)
 VALUES (?, ?, ?, ?, ?)
+RETURNING id
 `
 
 type CreateTaskParams struct {
@@ -23,27 +24,17 @@ type CreateTaskParams struct {
 	Completed   sql.NullInt64
 }
 
-func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) error {
-	_, err := q.db.ExecContext(ctx, createTask,
+func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createTask,
 		arg.Title,
 		arg.Description,
 		arg.DueDate,
 		arg.Overdue,
 		arg.Completed,
 	)
-	return err
-}
-
-const getLastID = `-- name: GetLastID :one
-SELECT last_insert_rowid()
-FROM tasks
-`
-
-func (q *Queries) GetLastID(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getLastID)
-	var last_insert_rowid int64
-	err := row.Scan(&last_insert_rowid)
-	return last_insert_rowid, err
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getTask = `-- name: GetTask :one

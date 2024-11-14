@@ -21,17 +21,14 @@ func TestToNullType(t *testing.T) {
 		assert.Equal(t, expected, result)
 	})
 
-	t.Run("Empty CustomDate to sql.NullTime", func(t *testing.T) {
-		expected := sql.NullTime{Time: time.Time{}, Valid: false}
+	t.Run("Empty CustomDate to sql.NullString", func(t *testing.T) {
+		expected := sql.NullString{String: time.Time{}.Format(models.DateFormat), Valid: true}
 		result := ToNullType(models.CustomDate{})
 		assert.Equal(t, expected, result)
 	})
 
-	t.Run("Non-empty CustomDate to sql.NullTime", func(t *testing.T) {
-		expected := sql.NullTime{
-			Time:  time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-			Valid: true,
-		}
+	t.Run("Non-empty CustomDate to sql.NullString", func(t *testing.T) {
+		expected := sql.NullString{String: "2024-01-01 00:00:00", Valid: true}
 		result := ToNullType(models.CustomDate{
 			Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		})
@@ -54,7 +51,7 @@ func TestToNullType(t *testing.T) {
 func TestToNormalType(t *testing.T) {
 	t.Run("sql.NullString with valid:false to string", func(t *testing.T) {
 		expected := ""
-		result := ToNormalType(sql.NullString{String: "", Valid: false})
+		result := ToNormalType(sql.NullString{Valid: false})
 		assert.Equal(t, expected, result)
 	})
 
@@ -64,20 +61,11 @@ func TestToNormalType(t *testing.T) {
 		assert.Equal(t, expected, result)
 	})
 
-	t.Run("sql.NullTime with valid:false to CustomDate", func(t *testing.T) {
-		expected := models.CustomDate{}
-		result := ToNormalType(sql.NullTime{Time: time.Time{}, Valid: false})
-		assert.Equal(t, expected, result)
-	})
-
-	t.Run("sql.NullTime with valid:true to CustomDate", func(t *testing.T) {
+	t.Run("sql.NullString with valid:true to CustomDate", func(t *testing.T) {
 		expected := models.CustomDate{
 			Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		}
-		result := ToNormalType(sql.NullTime{
-			Time:  time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-			Valid: true,
-		})
+		result := ToNormalType(sql.NullString{String: "2024-01-01 00:00:00", Valid: true})
 		assert.Equal(t, expected, result)
 	})
 

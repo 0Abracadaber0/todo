@@ -22,14 +22,14 @@ func ToNullType[T any](v T) interface{} {
 		}
 	case models.CustomDate:
 		if value.IsZero() {
-			return sql.NullTime{
-				Time:  time.Time{},
-				Valid: false,
+			return sql.NullString{
+				String: time.Time{}.Format(models.DateFormat),
+				Valid:  true,
 			}
 		} else {
-			return sql.NullTime{
-				Time:  value.Time,
-				Valid: true,
+			return sql.NullString{
+				String: value.Format(models.DateFormat),
+				Valid:  true,
 			}
 		}
 	case bool:
@@ -51,21 +51,23 @@ func ToNullType[T any](v T) interface{} {
 
 func ToNormalType[T any](v T) interface{} {
 	switch value := any(v).(type) {
-	case sql.NullTime:
-		if value.Valid {
-			return models.CustomDate{Time: value.Time}
-		} else {
-			return models.CustomDate{}
-		}
 	case sql.NullString:
 		if value.Valid {
-			return value.String
+			date, err := time.Parse(models.DateFormat, value.String)
+			if err != nil {
+				return value.String
+			}
+			return models.CustomDate{Time: date}
 		} else {
 			return ""
 		}
 	case sql.NullInt64:
-		return value.Int64 != 0
+		if value.Int64 == 0 {
+			return false
+		} else {
+			return true
+		}
 	default:
-		return nil
+		return ""
 	}
 }

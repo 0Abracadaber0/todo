@@ -1,6 +1,8 @@
--- name: CreateTask :exec
+-- name: CreateTask :one
 INSERT INTO tasks (title, description, due_date, overdue, completed)
-VALUES (?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?)
+RETURNING id;
+
 
 -- name: GetTask :one
 SELECT id, title, description, due_date, overdue, completed
@@ -11,6 +13,3 @@ WHERE id = ?;
 SELECT id, title, description, due_date, overdue, completed
 FROM tasks;
 
--- name: GetLastID :one
-SELECT last_insert_rowid()
-FROM tasks;

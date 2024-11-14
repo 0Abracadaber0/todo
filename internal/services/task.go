@@ -11,49 +11,55 @@ import (
 	"todo/internal/utils"
 )
 
-//func getTask(id int64) (models.Task, error) {
-//	query := database.New(db.DB)
-//	taskDb, err := query.GetTask(context.Background(), id)
-//	task := models.Task{
-//		ID:          taskDb.ID,
-//		Title:       utils.ToNormalType(taskDb.Title).(string),
-//		Description: utils.ToNullType(taskDb.Description).(string),
-//		DueDate:
-//	}
-//}
+func getTask(tx *sql.Tx, id int64) (models.Task, error) {
+	query := database.New(tx)
+	taskDb, err := query.GetTask(context.Background(), id)
+	if err != nil {
+		return models.Task{}, err
+	}
+
+	task := models.Task{
+		ID:          taskDb.ID,
+		Title:       taskDb.Title,
+		Description: utils.ToNormalType(taskDb.Description).(string),
+		DueDate:     utils.ToNormalType(taskDb.DueDate).(models.CustomDate),
+		Overdue:     utils.ToNormalType(taskDb.Overdue).(bool),
+		Completed:   utils.ToNormalType(taskDb.Completed).(bool),
+	}
+	return task, nil
+}
 
 func CreateTask(task models.Task) (models.Task, error) {
 
-	tx, err := db.DB.BeginTx(context.Background(), &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := db.DB.BeginTx(context.Background(), &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return models.Task{}, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
 	query := database.New(tx)
-	if err := query.CreateTask(context.Background(), database.CreateTaskParams{
+	id, err := query.CreateTask(context.Background(), database.CreateTaskParams{
 		Title:       task.Title,
 		Description: utils.ToNullType(task.Description).(sql.NullString),
 		DueDate:     utils.ToNullType(task.DueDate).(sql.NullString),
 		Overdue:     utils.ToNullType(task.Overdue).(sql.NullInt64),
 		Completed:   utils.ToNullType(task.Completed).(sql.NullInt64),
-	}); err != nil {
+	})
+	if err != nil {
 		_ = tx.Rollback()
 		return models.Task{}, fmt.Errorf("failed to create task: %w", err)
 	}
 
-	lastID, err := query.GetLastID(context.Background())
+	task, err = getTask(tx, id)
 	if err != nil {
 		_ = tx.Rollback()
-		return models.Task{}, fmt.Errorf("failed to get last id: %w", err)
+		return models.Task{}, fmt.Errorf("failed to get task: %w", err)
 	}
-
-	fmt.Println("last id", lastID)
 
 	if err := tx.Commit(); err != nil {
-		return models.Task{}, fmt.Errorf("failed to commit transaction: %w", err)
+		return task, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return models.Task{}, nil
+	return task, nil
 }
 
 func OverdueChecker(interval time.Duration) {

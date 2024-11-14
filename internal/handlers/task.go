@@ -7,8 +7,35 @@ import (
 	"todo/internal/services"
 )
 
+type TaskResponse struct {
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	DueDate     string `json:"due_date"`
+	Overdue     bool   `json:"overdue"`
+	Completed   bool   `json:"completed"`
+}
+
 func getLogger(c *fiber.Ctx) *slog.Logger {
 	return c.Locals("logger").(*slog.Logger)
+}
+
+func toTaskResponse(task models.Task) TaskResponse {
+	var dueDate string
+	if task.DueDate.Time.IsZero() {
+		dueDate = ""
+	} else {
+		dueDate = task.DueDate.Time.Format(models.DateFormat)
+	}
+
+	return TaskResponse{
+		ID:          task.ID,
+		Title:       task.Title,
+		Description: task.Description,
+		DueDate:     dueDate,
+		Overdue:     task.Overdue,
+		Completed:   task.Completed,
+	}
 }
 
 func CreateTaskHandler(c *fiber.Ctx) error {
@@ -29,8 +56,8 @@ func CreateTaskHandler(c *fiber.Ctx) error {
 			"error": "failed to create task",
 		})
 	}
-	log.Info("created task", "id", createdTask.ID)
-	return c.Status(fiber.StatusCreated).JSON(createdTask)
+	log.Info("created task with", "id", createdTask.ID)
+	return c.Status(fiber.StatusCreated).JSON(toTaskResponse(createdTask))
 }
 
 func ListTaskHandler(c *fiber.Ctx) error {
