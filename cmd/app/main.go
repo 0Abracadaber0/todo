@@ -5,11 +5,14 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 	"todo/config"
 	"todo/internal/db"
 	"todo/internal/middleware"
 	"todo/internal/router"
+	"todo/internal/services"
 )
 
 func main() {
@@ -34,6 +37,10 @@ func main() {
 	app.Use(middleware.LoggerMiddleware(log))
 
 	router.SetupRoutes(app)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go services.OverdueChecker(&wg, time.Hour*24)
 
 	go func() {
 		if err := app.Listen(":8080"); err != nil {

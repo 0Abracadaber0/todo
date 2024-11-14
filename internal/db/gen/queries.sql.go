@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const completeTask = `-- name: CompleteTask :exec
+UPDATE tasks
+SET completed = true
+WHERE id = ?
+`
+
+func (q *Queries) CompleteTask(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, completeTask, id)
+	return err
+}
+
 const createTask = `-- name: CreateTask :one
 INSERT INTO tasks (title, description, due_date, overdue, completed)
 VALUES (?, ?, ?, ?, ?)

@@ -126,5 +126,26 @@ func DeleteTaskHandler(c *fiber.Ctx) error {
 }
 
 func CompleteTaskHandler(c *fiber.Ctx) error {
-	return nil
+	log := getLogger(c)
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		log.Error("failed to get id params")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid id params",
+		})
+	}
+
+	if err = services.CompleteTask(int64(id)); errors.Is(err, sql.ErrNoRows) {
+		log.Error("task no found", "id", int64(id))
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "task not found",
+		})
+	} else if err != nil {
+		log.Error("failed to complete task", "error", err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "task successfully completed",
+	})
 }

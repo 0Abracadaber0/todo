@@ -23,3 +23,8 @@ SET title = ?,
     description = ?,
     due_date = ?
 WHERE id = ?;
+
+-- name: CompleteTask :exec
+UPDATE tasks
+SET completed = true
+WHERE id = ?;
