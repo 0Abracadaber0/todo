@@ -15,4 +15,11 @@ FROM tasks;
 
 -- name: DeleteTask :exec
 DELETE FROM tasks
-WHERE id = ?
+WHERE id = ?;
+
+-- name: UpdateTask :exec
+UPDATE tasks
+SET title = ?,
+    description = ?,
+    due_date = ?
+WHERE id = ?;

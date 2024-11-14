@@ -59,7 +59,44 @@ func ListTaskHandler(c *fiber.Ctx) error {
 }
 
 func UpdateTaskHandler(c *fiber.Ctx) error {
-	return nil
+	log := getLogger(c)
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		log.Error("failed to get id params", "error", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid id params",
+		})
+	}
+
+	var body TaskRequest
+	if err := c.BodyParser(&body); err != nil {
+		log.Error("failed to parse request body", "error", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	task, err := FromTaskRequest(body)
+	task.ID = int64(id)
+	if err != nil {
+		log.Error("failed to parse request body", "error", err)
+	}
+	err = services.UpdateTask(task)
+	if errors.Is(err, sql.ErrNoRows) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "task not found",
+		})
+	} else if err != nil {
+		log.Error("failed to update task", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to update task",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "task successfully updated",
+	})
 }
 
 func DeleteTaskHandler(c *fiber.Ctx) error {
@@ -84,7 +121,7 @@ func DeleteTaskHandler(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"info": "task successfully deleted",
+		"message": "task successfully deleted",
 	})
 }
 

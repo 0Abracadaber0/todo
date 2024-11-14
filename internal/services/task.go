@@ -85,6 +85,41 @@ func GetTasks() ([]models.Task, error) {
 	return tasks, nil
 }
 
+func UpdateTask(task models.Task) error {
+	tx, err := db.DB.BeginTx(context.Background(), &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return fmt.Errorf("failed to create transaction: %w", err)
+	}
+
+	query := database.New(tx)
+	_, err = query.GetTask(context.Background(), task.ID)
+	if errors.Is(err, sql.ErrNoRows) {
+		_ = tx.Rollback()
+		return err
+	} else if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("failed to get task: %w", err)
+	}
+
+	err = query.UpdateTask(context.Background(), database.UpdateTaskParams{
+		Title:       task.Title,
+		Description: utils.ToNullType(task.Description).(sql.NullString),
+		DueDate:     utils.ToNullType(task.DueDate).(sql.NullString),
+		ID:          task.ID,
+	})
+
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("failed to update task: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
 func DeleteTask(id int64) error {
 	tx, err := db.DB.BeginTx(context.Background(), &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
