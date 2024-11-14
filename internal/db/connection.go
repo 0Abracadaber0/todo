@@ -8,20 +8,23 @@ import (
 	"path/filepath"
 )
 
-func Connect(databasePath string) (*sql.DB, error) {
+var DB *sql.DB
+
+func Connect(databasePath string) error {
 	if err := mkDir(databasePath); err != nil {
-		return nil, err
+		return err
 	}
-	db, err := sql.Open("sqlite3", databasePath)
+	var err error
+	DB, err = sql.Open("sqlite3", databasePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return fmt.Errorf("failed to open database: %w", err)
 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+	if err := DB.Ping(); err != nil {
+		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return db, nil
+	return nil
 }
 
 func mkDir(filePath string) error {

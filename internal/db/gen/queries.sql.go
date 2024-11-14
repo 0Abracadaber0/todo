@@ -34,6 +34,18 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) error {
 	return err
 }
 
+const getLastID = `-- name: GetLastID :one
+SELECT last_insert_rowid()
+FROM tasks
+`
+
+func (q *Queries) GetLastID(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getLastID)
+	var last_insert_rowid int64
+	err := row.Scan(&last_insert_rowid)
+	return last_insert_rowid, err
+}
+
 const getTask = `-- name: GetTask :one
 SELECT id, title, description, due_date, overdue, completed
 FROM tasks

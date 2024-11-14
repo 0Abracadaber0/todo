@@ -7,16 +7,11 @@ import (
 	"todo/internal/services"
 )
 
-func getTaskService(c *fiber.Ctx) *services.TaskService {
-	return c.Locals("taskService").(*services.TaskService)
-}
-
 func getLogger(c *fiber.Ctx) *slog.Logger {
 	return c.Locals("logger").(*slog.Logger)
 }
 
 func CreateTaskHandler(c *fiber.Ctx) error {
-	taskService := getTaskService(c)
 	log := getLogger(c)
 
 	var task models.Task
@@ -26,7 +21,8 @@ func CreateTaskHandler(c *fiber.Ctx) error {
 			"error": "Invalid request body",
 		})
 	}
-	createdTask, err := taskService.CreateTask(log, task)
+
+	createdTask, err := services.CreateTask(task)
 	if err != nil {
 		log.Error("failed to create task", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

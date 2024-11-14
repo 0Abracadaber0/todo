@@ -29,7 +29,7 @@ func (d *CustomDate) MarshalJSON() ([]byte, error) {
 }
 
 type Task struct {
-	ID          int        `json:"id"`
+	ID          int64      `json:"id"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	DueDate     CustomDate `json:"due_date"`
