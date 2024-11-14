@@ -57,13 +57,13 @@ func (q *Queries) GetTask(ctx context.Context, id int64) (Task, error) {
 	return i, err
 }
 
-const listTasks = `-- name: ListTasks :many
+const getTasks = `-- name: GetTasks :many
 SELECT id, title, description, due_date, overdue, completed
 FROM tasks
 `
 
-func (q *Queries) ListTasks(ctx context.Context) ([]Task, error) {
-	rows, err := q.db.QueryContext(ctx, listTasks)
+func (q *Queries) GetTasks(ctx context.Context) ([]Task, error) {
+	rows, err := q.db.QueryContext(ctx, getTasks)
 	if err != nil {
 		return nil, err
 	}

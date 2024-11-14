@@ -32,12 +32,27 @@ func CreateTaskHandler(c *fiber.Ctx) error {
 			"error": "failed to create task",
 		})
 	}
-	log.Info("created task with", "id", createdTask.ID)
+	log.Info("task successfully created with", "id", createdTask.ID)
 	return c.Status(fiber.StatusCreated).JSON(ToTaskResponse(createdTask))
 }
 
 func ListTaskHandler(c *fiber.Ctx) error {
-	return nil
+	log := getLogger(c)
+
+	tasks, err := services.GetTasks()
+	if err != nil {
+		log.Error("failed to get tasks", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get tasks",
+		})
+	}
+
+	responseTasks := make([]TaskResponse, len(tasks))
+	for i, task := range tasks {
+		responseTasks[i] = ToTaskResponse(task)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(responseTasks)
 }
 
 func UpdateTaskHandler(c *fiber.Ctx) error {

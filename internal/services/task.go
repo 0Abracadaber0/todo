@@ -62,6 +62,28 @@ func CreateTask(task models.Task) (models.Task, error) {
 	return task, nil
 }
 
+func GetTasks() ([]models.Task, error) {
+	query := database.New(db.DB)
+	tasksDb, err := query.GetTasks(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tasks: %w", err)
+	}
+	tasks := make([]models.Task, len(tasksDb))
+
+	for i, taskDb := range tasksDb {
+		tasks[i] = models.Task{
+			ID:          taskDb.ID,
+			Title:       taskDb.Title,
+			Description: utils.ToNormalType(taskDb.Description).(string),
+			DueDate:     utils.ToNormalType(taskDb.DueDate).(models.CustomDate),
+			Overdue:     utils.ToNormalType(taskDb.Overdue).(bool),
+			Completed:   utils.ToNormalType(taskDb.Completed).(bool),
+		}
+	}
+
+	return tasks, nil
+}
+
 func OverdueChecker(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

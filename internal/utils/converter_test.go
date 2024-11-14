@@ -28,7 +28,7 @@ func TestToNullType(t *testing.T) {
 	})
 
 	t.Run("Non-empty CustomDate to sql.NullString", func(t *testing.T) {
-		expected := sql.NullString{String: "2024-01-01 00:00:00", Valid: true}
+		expected := sql.NullString{String: "2024-01-01", Valid: true}
 		result := ToNullType(models.CustomDate{
 			Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		})
@@ -65,7 +65,7 @@ func TestToNormalType(t *testing.T) {
 		expected := models.CustomDate{
 			Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		}
-		result := ToNormalType(sql.NullString{String: "2024-01-01 00:00:00", Valid: true})
+		result := ToNormalType(sql.NullString{String: "2024-01-01", Valid: true})
 		assert.Equal(t, expected, result)
 	})
 

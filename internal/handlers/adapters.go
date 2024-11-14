@@ -21,19 +21,20 @@ type TaskResponse struct {
 }
 
 func FromTaskRequest(req TaskRequest) (models.Task, error) {
-	var overdue models.CustomDate
-	if req.DueDate == "" {
-		overdue.Time = time.Time{}
-	}
+	var dueDate models.CustomDate
 	var err error
-	overdue.Time, err = time.Parse(models.DateFormat, req.DueDate)
-	if err != nil {
-		return models.Task{}, err
+
+	if req.DueDate != "" {
+		dueDate.Time, err = time.Parse(models.DateFormat, req.DueDate)
+		if err != nil {
+			return models.Task{}, err
+		}
 	}
+
 	task := models.Task{
 		Title:       req.Title,
 		Description: req.Description,
-		DueDate:     overdue,
+		DueDate:     dueDate,
 		Overdue:     false,
 		Completed:   false,
 	}

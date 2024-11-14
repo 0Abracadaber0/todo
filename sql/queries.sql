@@ -9,7 +9,7 @@ SELECT id, title, description, due_date, overdue, completed
 FROM tasks
 WHERE id = ?;
 
--- name: ListTasks :many
+-- name: GetTasks :many
 SELECT id, title, description, due_date, overdue, completed
 FROM tasks;
 
