@@ -113,6 +113,17 @@ func (q *Queries) GetTasks(ctx context.Context) ([]Task, error) {
 	return items, nil
 }
 
+const markOverdueTasks = `-- name: MarkOverdueTasks :exec
+UPDATE tasks
+SET Overdue = 1
+WHERE due_date < CURRENT_DATE AND completed == 0 AND overdue == 0
+`
+
+func (q *Queries) MarkOverdueTasks(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, markOverdueTasks)
+	return err
+}
+
 const updateTask = `-- name: UpdateTask :exec
 UPDATE tasks
 SET title = ?,

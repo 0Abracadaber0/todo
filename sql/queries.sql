@@ -28,3 +28,9 @@ WHERE id = ?;
 UPDATE tasks
 SET completed = true
 WHERE id = ?;
+
+-- name: MarkOverdueTasks :exec
+UPDATE tasks
+SET overdue = 1
+WHERE due_date < CURRENT_DATE AND completed == 0 AND overdue == 0;
+

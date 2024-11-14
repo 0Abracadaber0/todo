@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 	"todo/internal/db"
@@ -177,11 +178,21 @@ func CompleteTask(id int64) error {
 	return nil
 }
 
-func OverdueChecker(wg *sync.WaitGroup, interval time.Duration) {
+func OverdueChecker(wg *sync.WaitGroup, log *slog.Logger, interval time.Duration, stopChan chan struct{}) {
 	defer wg.Done()
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
-		select {}
+		select {
+		case <-ticker.C:
+			query := database.New(db.DB)
+			err := query.MarkOverdueTasks(context.Background())
+			if err != nil {
+				log.Error("failed to mark overdue tasks: %w", err)
+			}
+		case <-stopChan:
+			log.Info("stopping overdue checker")
+			return
+		}
 	}
 }

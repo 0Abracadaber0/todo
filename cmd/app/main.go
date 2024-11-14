@@ -38,9 +38,11 @@ func main() {
 
 	router.SetupRoutes(app)
 
+	stopChan := make(chan struct{})
+
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go services.OverdueChecker(&wg, time.Hour*24)
+	go services.OverdueChecker(&wg, log, time.Minute, stopChan)
 
 	go func() {
 		if err := app.Listen(":8080"); err != nil {
@@ -51,9 +53,9 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Info("shutting down server...")
-	err = app.Shutdown()
-	if err != nil {
-		panic(err)
-	}
+	log.Info("shutting down app...")
+
+	close(stopChan)
+	wg.Wait()
+	log.Info("app stopped")
 }
