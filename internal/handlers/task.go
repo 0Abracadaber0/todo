@@ -55,6 +55,7 @@ func ListTaskHandler(c *fiber.Ctx) error {
 		responseTasks[i] = ToTaskResponse(task)
 	}
 
+	log.Info("tasks successfully received", "count", len(responseTasks))
 	return c.Status(fiber.StatusOK).JSON(responseTasks)
 }
 
@@ -94,6 +95,7 @@ func UpdateTaskHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Info("task successfully updated with", "id", task.ID)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "task successfully updated",
 	})
@@ -120,6 +122,7 @@ func DeleteTaskHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{})
 	}
 
+	log.Info("task successfully deleted with", "id", int64(id))
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "task successfully deleted",
 	})
@@ -145,6 +148,7 @@ func CompleteTaskHandler(c *fiber.Ctx) error {
 		log.Error("failed to complete task", "error", err)
 	}
 
+	log.Info("task successfully completed with", "id", int64(id))
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "task successfully completed",
 	})
