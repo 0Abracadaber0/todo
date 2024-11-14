@@ -13,3 +13,6 @@ WHERE id = ?;
 SELECT id, title, description, due_date, overdue, completed
 FROM tasks;
 
+-- name: DeleteTask :exec
+DELETE FROM tasks
+WHERE id = ?

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 	"todo/internal/db"
@@ -82,6 +83,34 @@ func GetTasks() ([]models.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func DeleteTask(id int64) error {
+	tx, err := db.DB.BeginTx(context.Background(), &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return fmt.Errorf("failed to create transaction: %w", err)
+	}
+
+	query := database.New(tx)
+	_, err = query.GetTask(context.Background(), id)
+	if errors.Is(err, sql.ErrNoRows) {
+		_ = tx.Rollback()
+		return err
+	} else if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("failed to get task: %w", err)
+	}
+
+	err = query.DeleteTask(context.Background(), id)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("failed to delete task: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func OverdueChecker(interval time.Duration) {
